@@ -3,7 +3,7 @@
     <p>Главная</p>
     <UButton
       class="justify-center cursor-pointer ml-auto"
-      label="Разлогиниться"
+      label="Выйти"
       type="submit"
       variant="subtle"
       @click="
