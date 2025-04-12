@@ -1,8 +1,45 @@
 <template>
-  <header :class="['pt-[14px] pb-[14px] border-b', headerClass, borderClass]">
-    <UContainer class="flex flex-row justify-center items-center gap-1">
+  <header
+    :class="[
+      'pt-[14px] pb-[14px] border-b flex flex-row',
+      headerClass,
+      borderClass,
+    ]"
+  >
+    <UContainer class="flex flex-row justify-center items-center gap-2">
       <UIcon class="size-[40px]" name="hugeicons:electric-home-02" />
       <span>DomConnect</span>
+    </UContainer>
+    <UContainer class="flex flex-row justify-center items-center gap-6">
+      <ULink
+        v-for="(item, number) in links"
+        :key="number"
+        :to="`/${item.link}`"
+        as="button"
+        >{{ item.name }}</ULink
+      >
+    </UContainer>
+    <UContainer class="flex flex-row justify-center items-center gap-6">
+      <UButton
+        class="cursor-pointer"
+        icon="hugeicons:moon-02"
+        size="md"
+        color="primary"
+        variant="outline"
+      />
+      <UButton
+        icon="hugeicons:logout-02"
+        class="cursor-pointer"
+        size="md"
+        color="primary"
+        variant="outline"
+        @click="
+          () => {
+            useCookie('access_token').value = '';
+            navigateTo('/auth', { replace: true });
+          }
+        "
+      />
     </UContainer>
   </header>
   <main>
@@ -21,8 +58,15 @@ const headerClass = computed(() => {
 });
 
 const borderClass = computed(() => {
-  return colorMode.value === "dark" ? "border-slate-600" : "border-indigo-700";
+  return colorMode.value === "dark" ? "border-slate-600" : "border-indigo-900";
 });
+
+const links = ref<{ name: string; link: string }[]>([
+  { name: "Главная", link: "" },
+  { name: "Счета", link: "accounts" },
+  { name: "Заявки", link: "requests" },
+  { name: "Профиль", link: "profile" },
+]);
 </script>
 
 <style scoped></style>
