@@ -147,7 +147,10 @@
           </template>
         </UCollapsible>
       </div>
-      <div class="min-h-[16px] mt-[-16px]" />
+      <div
+        v-if="viewport.isLessThan('desktop')"
+        class="min-h-[16px] mt-[-16px]"
+      />
     </div>
     <div
       v-if="!viewport.isLessThan('desktop')"
