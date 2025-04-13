@@ -33,6 +33,13 @@ export default defineNuxtConfig({
     classSuffix: "",
   },
 
+  viewport: {
+    breakpoints: {
+      mobile: 0,
+      desktop: 685,
+    },
+  },
+
   css: ["~/assets/css/main.css"],
 
   future: {
