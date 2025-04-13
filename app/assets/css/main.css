@@ -4,3 +4,11 @@
 @theme {
   --font-sans: 'Public Sans', sans-serif;
 }
+
+*{
+  box-sizing: border-box;
+}
+
+html, body, #__nuxt {
+  height: 100%;
+}
