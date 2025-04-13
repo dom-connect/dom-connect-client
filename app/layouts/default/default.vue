@@ -1,10 +1,6 @@
 <template>
   <header
-    :class="[
-      'pt-[14px] pb-[14px] border-b flex flex-row',
-      headerClass,
-      borderClass,
-    ]"
+    class="pt-[14px] pb-[14px] border-b border-neutral-700 flex flex-row bg-neutral-800 text-blue-400"
   >
     <UContainer class="flex flex-row justify-center items-center gap-2">
       <UIcon class="size-[40px]" name="hugeicons:electric-home-02" />
@@ -25,14 +21,14 @@
         icon="hugeicons:moon-02"
         size="md"
         color="primary"
-        variant="outline"
+        variant="subtle"
       />
       <UButton
         icon="hugeicons:logout-02"
         class="cursor-pointer"
         size="md"
         color="primary"
-        variant="outline"
+        variant="subtle"
         @click="
           () => {
             useCookie('access_token').value = '';
@@ -49,18 +45,6 @@
 </template>
 
 <script lang="ts" setup>
-const colorMode = useColorMode();
-
-const headerClass = computed(() => {
-  return colorMode.value === "dark"
-    ? "bg-slate-700 text-white"
-    : "bg-indigo-600 text-white";
-});
-
-const borderClass = computed(() => {
-  return colorMode.value === "dark" ? "border-slate-600" : "border-indigo-900";
-});
-
 const links = ref<{ name: string; link: string }[]>([
   { name: "Главная", link: "" },
   { name: "Счета", link: "accounts" },
