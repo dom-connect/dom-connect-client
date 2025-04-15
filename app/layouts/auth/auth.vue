@@ -1,6 +1,6 @@
 <template>
   <header />
-  <main>
+  <main style="height: 100%">
     <slot />
   </main>
   <footer />

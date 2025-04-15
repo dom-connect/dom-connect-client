@@ -65,9 +65,13 @@
           />
           <template #content>
             <UContainer
+              :class="colorMode.preference === 'dark' ? '' : 'bg-neutral-800'"
               class="flex flex-row h-[72px] justify-between items-center pt-[16px] pb-[16px] border-b border-neutral-700"
             >
-              <span>Меню</span>
+              <span
+                :class="colorMode.preference === 'dark' ? '' : 'text-blue-400'"
+                >Меню</span
+              >
               <UButton
                 class="cursor-pointer"
                 color="primary"
@@ -117,9 +121,9 @@
     </UContainer>
   </header>
   <main
-    style="height: calc(100% - 69px)"
-    class="pb-[32px]"
     :class="viewport.isLessThan('desktop') ? 'pt-[69px]' : ''"
+    class="pb-[32px]"
+    style="height: calc(100% - 69px)"
   >
     <slot />
   </main>
@@ -129,6 +133,8 @@
 <script lang="ts" setup>
 const viewport = useViewport();
 
+const colorMode = useColorMode();
+
 const open = ref<boolean>(false);
 
 const links = ref<{ name: string; link: string }[]>([
@@ -137,8 +143,6 @@ const links = ref<{ name: string; link: string }[]>([
   { name: "Заявки", link: "requests" },
   { name: "Профиль", link: "profile" },
 ]);
-
-const colorMode = useColorMode();
 
 const toggleTheme = () => {
   colorMode.preference = colorMode.preference === "dark" ? "light" : "dark";
