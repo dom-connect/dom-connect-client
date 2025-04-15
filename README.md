@@ -1,75 +1,108 @@
-# Nuxt UI v3 Starter
+# DomConnect — Nuxt 3 + Nuxt UI Starter
 
-Look at [Nuxt docs](https://nuxt.com/docs/getting-started/introduction) and [Nuxt UI docs](https://ui3.nuxt.dev) to learn more.
+> Веб-приложение для взаимодействия жителей ЖК с управляющей компанией.  
+> Основано на Nuxt 3 с использованием Nuxt UI и современного фронтенд-стека.
 
-## Setup
+---
 
-Make sure to install the dependencies:
+## 🚀 Технологии
+
+- **Nuxt 3** — современный фреймворк на Vue
+- **Nuxt UI** — готовые UI-компоненты и утилиты
+- **Pinia** — хранилище состояния
+- **TypeScript**
+- **ESLint + Prettier + Husky** — контроль качества кода
+- **Nuxt Typed Router**, **Nuxt Viewport**, **VueUse**
+
+---
+
+## 📦 Установка
+
+Установите зависимости:
 
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
+# с помощью yarn
 yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+Также поддерживаются `npm`, `pnpm` и `bun`.
 
-Start the development server on `http://localhost:3000`:
+---
+
+## 💻 Запуск в разработке
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+  yarn dev
 ```
 
-## Production
+Сервер будет доступен по адресу [http://localhost:3000](http://localhost:3000)
 
-Build the application for production:
+---
+
+## 🏗 Сборка и предпросмотр
+
+Собрать проект:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+  yarn build
 ```
 
-Locally preview production build:
+Предпросмотр продакшн-сборки:
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+  yarn preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+---
+
+## ✅ Проверка кода
+
+Проверка линтинга:
+
+```bash
+  yarn lint
+```
+
+Автоисправление:
+
+```bash
+  yarn lint:fix
+```
+
+Проверка типов:
+
+```bash
+  yarn type-check
+```
+
+---
+
+## ⚙️ Скрипты
+
+| Скрипт        | Назначение                         |
+|---------------|------------------------------------|
+| `dev`         | Запуск dev-сервера                 |
+| `build`       | Сборка проекта                     |
+| `preview`     | Предпросмотр продакшн-сборки       |
+| `generate`    | Статическая генерация (если нужно) |
+| `type-check`  | Проверка типов TypeScript          |
+| `lint`        | Линтинг кода                       |
+| `lint:fix`    | Автоисправление кода               |
+| `prepare`     | Подготовка Husky хуков             |
+| `postinstall` | Подготовка Nuxt после установки    |
+
+---
+
+## 📚 Полезные ссылки
+
+- [Nuxt 3 Docs](https://nuxt.com/docs/getting-started/introduction)
+- [Nuxt UI Docs](https://ui.nuxt.com/)
+- [Pinia](https://pinia.vuejs.org/)
+- [VueUse](https://vueuse.org/)
+- [Typed Router](https://typed-router.nuxt.space/)
+
+---
+
+## 📝 Лицензия
+
+MIT
