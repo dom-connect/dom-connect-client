@@ -177,9 +177,14 @@
 </template>
 
 <script lang="ts" setup>
+import { useAuthStore } from "~/store/auth";
+
 useHead({
   title: "DomConnect – Главная",
 });
+
+const authStore = useAuthStore();
+const { logout } = authStore;
 
 const colorMode = useColorMode();
 

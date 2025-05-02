@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { process } from "std-env";
+
 export default defineNuxtConfig({
   app: {
     head: {
@@ -26,7 +28,14 @@ export default defineNuxtConfig({
     "nuxt-typed-router",
     "@nuxt/fonts",
   ],
-
+  plugins: ["~/plugins/firebase.client.ts"],
+  nitro: {
+    routeRules: {
+      "/endpoint/**": {
+        proxy: `${process.env.NUXT_PUBLIC_URL}/**`,
+      },
+    },
+  },
   colorMode: {
     preference: "system",
     fallback: "light",

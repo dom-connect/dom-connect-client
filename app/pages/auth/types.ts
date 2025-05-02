@@ -1,6 +1,7 @@
 export const enum EProgressAuth {
   initial = "initial",
   expectation = "expectation",
-  objects = "objects",
+  registerUserInfo = "registerUserInfo",
+  registerUserObjects = "registerUserObjects",
   confirmation = "confirmation",
 }
