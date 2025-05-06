@@ -29,7 +29,6 @@ jobs:
             --platform linux/amd64 \
             --tag vodka228/diplom-client:latest \
             --file Dockerfile \
-            --cache-from=type=registry,ref=vodka228/diplom-client:buildcache \
             --cache-to=type=registry,ref=vodka228/diplom-client:buildcache,mode=max \
             --load \
             .
