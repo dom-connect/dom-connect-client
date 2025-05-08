@@ -1,10 +1,10 @@
 import { useApiClient } from "~/api/apiClient";
 import { process } from "std-env";
+import { FetchError } from "ofetch";
 
 export const useAuthStore = defineStore("auth", () => {
   const api = useApiClient();
   const loading = ref<boolean>(false);
-  const sessionInfo = ref<string>("");
   const houses = ref<any>([]);
   const premises = ref<any>([]);
   const roles = ref<any>([]);
@@ -23,38 +23,52 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      const response = await api.post<any>("/endpoint/auth/login", {
+      const response = await api.post<any>("/api/auth/login", {
         email: email,
         password: password,
         code: code,
-        sessionInfo: sessionInfo.value,
       });
 
       if (response.accessToken && response.refreshToken) {
         accessToken.value = response.accessToken;
         refreshToken.value = response.refreshToken;
       }
+
+      return 200;
     } catch (e) {
-      console.error(e);
+      console.error("Ошибка:", e);
+
+      if (e instanceof FetchError && e.response) {
+        return e.response.status;
+      }
+
+      return 500;
     } finally {
       loading.value = false;
     }
   };
 
-  const fetchSignInCode = async (email: string, password: string) => {
+  const fetchSignInCode = async (
+    email: string,
+    password: string,
+  ): Promise<number> => {
     try {
       loading.value = true;
 
-      const response = await api.post<any>("/endpoint/auth/send-code/login", {
-        email: email,
-        password: password,
+      await api.post<any>("/api/auth/send-code/login", {
+        email,
+        password,
       });
 
-      if (response.data.sessionInfo) {
-        sessionInfo.value = response.data.sessionInfo;
+      return 200;
+    } catch (e: unknown) {
+      console.error("Ошибка:", e);
+
+      if (e instanceof FetchError && e.response) {
+        return e.response.status;
       }
-    } catch (e) {
-      console.error(e);
+
+      return 500;
     } finally {
       loading.value = false;
     }
@@ -71,7 +85,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      await api.post<any>("/endpoint/auth/send-code/registration", {
+      await api.post<any>("/api/auth/send-code/registration", {
         ...obj,
       });
     } catch (e) {
@@ -93,7 +107,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      const response = await api.post<any>("/endpoint/auth/pre-registration", {
+      const response = await api.post<any>("/api/auth/pre-registration", {
         ...obj,
       });
 
@@ -120,7 +134,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      const response = await api.post<any>("/endpoint/auth/registration", {
+      const response = await api.post<any>("/api/auth/registration", {
         ...obj,
       });
 
@@ -139,7 +153,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      await api.post<any>("/endpoint/auth/logout", {});
+      await api.post<any>("/api/auth/logout", {});
 
       navigateTo("/auth", { replace: true });
     } catch (e) {
@@ -153,7 +167,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      const response = await api.get<any>("/endpoint/auth/home");
+      const response = await api.get<any>("/api/auth/home");
 
       if (response.data.length) {
         houses.value = response.data;
@@ -187,7 +201,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      const response = await api.get<any>("/endpoint/auth/role");
+      const response = await api.get<any>("/api/auth/role");
 
       if (response.data.length) {
         roles.value = response.data;

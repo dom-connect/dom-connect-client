@@ -13,7 +13,12 @@
       >
         <template #login>
           <UForm :state="login" class="flex flex-col gap-[16px] mt-[26px]">
-            <UFormField label="Электронная почта" name="email" required>
+            <UFormField
+              :validate="validateEmail"
+              label="Электронная почта"
+              name="email"
+              required
+            >
               <UInput
                 v-model="login.email"
                 class="w-full"
@@ -21,7 +26,12 @@
                 type="email"
               />
             </UFormField>
-            <UFormField label="Пароль" name="password" required>
+            <UFormField
+              :validate="validatePassword"
+              label="Пароль"
+              name="password"
+              required
+            >
               <UInput
                 v-model="login.password"
                 class="w-full"
@@ -29,6 +39,11 @@
                 type="password"
               />
             </UFormField>
+            <span
+              v-if="errorMessage"
+              class="text-error-400 text-sm font-semibold"
+              >{{ errorMessage }}</span
+            >
             <ULink class="text-end" to="/">Забыли пароль?</ULink>
             <UCheckbox
               v-model="login.remember"
@@ -56,7 +71,12 @@
                 type="tel"
               />
             </UFormField>
-            <UFormField label="Электронная почта" name="email" required>
+            <UFormField
+              :validate="validateEmail"
+              label="Электронная почта"
+              name="email"
+              required
+            >
               <UInput
                 v-model="register.email"
                 class="w-full"
@@ -64,7 +84,12 @@
                 type="email"
               />
             </UFormField>
-            <UFormField label="Пароль" name="password" required>
+            <UFormField
+              :validate="validatePassword"
+              label="Пароль"
+              name="password"
+              required
+            >
               <UInput
                 v-model="register.password"
                 class="w-full"
@@ -84,12 +109,7 @@
               label="Зарегистрироваться"
               type="submit"
               variant="subtle"
-              @click="
-                async () => {
-                  await nextTick();
-                  currentProgress = EProgressAuth.registerUserInfo;
-                }
-              "
+              @click="onSubmitRegistration"
             />
           </UForm>
         </template>
@@ -105,6 +125,7 @@
       <auth-confirm
         v-if="currentProgress === EProgressAuth.confirmation"
         v-model="code"
+        :error-message="errorCodeMessage"
         @on-back="onBackConfirm"
       />
       <auth-user-objects
@@ -145,7 +166,6 @@ const {
   fetchSignUpCode,
   fetchSignUpRegistration,
   fetchSignUpPreRegistration,
-  fetchAuthHouses,
 } = authStore;
 
 const login = reactive({
@@ -172,6 +192,9 @@ const isTimerActive = ref<boolean>(false);
 const isLogin = ref<boolean>(false);
 const timeLeft = ref<number>(60);
 
+const errorMessage = ref<string>("");
+const errorCodeMessage = ref<string>("");
+
 const selectedPremise = ref();
 const selectedRole = ref();
 
@@ -190,29 +213,62 @@ const items = ref([
 
 let timer: NodeJS.Timeout;
 
+const validateEmail = (value: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(value) || "Введите корректный email";
+};
+
+const validatePassword = (value: string) => {
+  const passwordRegex =
+    /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/;
+  return (
+    passwordRegex.test(value) ||
+    "Пароль должен быть от 6 символов, с заглавной буквой и спецсимволом"
+  );
+};
+
+const onSubmitRegistration = async () => {
+  const phone = register.phone.replace(/[^+\d]/g, "");
+
+  if (
+    phone.length === 12 &&
+    typeof validateEmail(register.email) === "boolean" &&
+    typeof validatePassword(register.password) === "boolean"
+  ) {
+    await nextTick();
+    currentProgress.value = EProgressAuth.registerUserInfo;
+  }
+};
+
 const onBackUserInfo = async () => {
   await nextTick();
   currentProgress.value = EProgressAuth.initial;
 };
 
 const onSubmitUserInfo = async () => {
-  if (!recaptchaToken.value) {
-    await getRecaptchaToken();
+  if (
+    register.firstName.length &&
+    register.lastName.length &&
+    register.middleName.length
+  ) {
+    if (!recaptchaToken.value) {
+      await getRecaptchaToken();
+    }
+
+    const phone = register.phone.replace(/[^+\d]/g, "");
+    await fetchSignUpCode({
+      firstName: register.firstName,
+      lastName: register.lastName,
+      middleName: register.middleName,
+      password: register.password,
+      email: register.email,
+      phone: phone,
+    });
+
+    await nextTick();
+
+    currentProgress.value = EProgressAuth.confirmation;
   }
-
-  const phone = register.phone.replace(/[^+\d]/g, "");
-  await fetchSignUpCode({
-    firstName: register.firstName,
-    lastName: register.lastName,
-    middleName: register.middleName,
-    password: register.password,
-    email: register.email,
-    phone: phone,
-  });
-
-  await nextTick();
-
-  currentProgress.value = EProgressAuth.confirmation;
 };
 
 const onBackConfirm = () => {
@@ -276,10 +332,26 @@ const onLogin = async () => {
     login.password.length > 5 &&
     recaptchaToken.value.length
   ) {
-    isLogin.value = true;
     await nextTick();
-    await fetchSignInCode(login.email, login.password);
-    currentProgress.value = EProgressAuth.confirmation;
+    const status = await fetchSignInCode(login.email, login.password);
+    console.log(status);
+    switch (status) {
+      case 400: {
+        errorMessage.value =
+          "Неверный эл. адрес/пароль или пользователь не существует";
+        break;
+      }
+      case 200: {
+        errorMessage.value = "";
+        isLogin.value = true;
+        currentProgress.value = EProgressAuth.confirmation;
+        break;
+      }
+      default: {
+        errorMessage.value = "Ошибка сервера";
+        break;
+      }
+    }
   }
 };
 
@@ -330,9 +402,14 @@ watch(code, async (newValue) => {
   if (newValue.length === 6) {
     const code = newValue.reduce((acc, curr) => acc + curr, "");
     if (isLogin.value) {
-      await fetchSignIn(login.email, login.password, code);
-      await nextTick();
-      navigateTo("/", { replace: true });
+      const status = await fetchSignIn(login.email, login.password, code);
+
+      if (status === 200) {
+        errorCodeMessage.value = "";
+        navigateTo("/", { replace: true });
+      } else {
+        errorCodeMessage.value = "Неверный код";
+      }
     } else {
       const phone = register.phone.replace(/[^+\d]/g, "");
       await fetchSignUpPreRegistration({

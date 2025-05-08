@@ -22,6 +22,9 @@
         type="number"
       />
     </UFormField>
+    <span v-if="errorMessage" class="text-error-400 text-sm font-semibold">{{
+      errorMessage
+    }}</span>
     <span class="text-sm text-neutral-400 font-medium mt-4 mb-8"
       >Не получили код? Запросите повторную отправку через 60 секунд</span
     >
@@ -37,8 +40,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { IEmits } from "./types";
+import type { IEmits, IProps } from "./types";
 
+const props = defineProps<IProps>();
 const emit = defineEmits<IEmits>();
 
 const inputCode = defineModel<string[]>();

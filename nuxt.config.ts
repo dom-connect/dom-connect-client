@@ -29,12 +29,15 @@ export default defineNuxtConfig({
     "@nuxt/fonts",
   ],
   plugins: ["~/plugins/firebase.client.ts"],
-  nitro: {
-    routeRules: {
-      "/endpoint/**": {
-        proxy: `${process.env.NUXT_PUBLIC_URL}/**`,
-      },
-    },
+  // nitro: {
+  //     routeRules: {
+  //         "/proxy-api/**": {
+  //             proxy: `${process.env.NUXT_PUBLIC_URL}/:splat`,
+  //         },
+  //     },
+  // },
+  runtimeConfig: {
+    proxyUrl: process.env.NUXT_PUBLIC_URL,
   },
   colorMode: {
     preference: "system",
