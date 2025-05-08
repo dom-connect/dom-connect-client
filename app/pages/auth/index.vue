@@ -126,12 +126,14 @@
         v-if="currentProgress === EProgressAuth.confirmation"
         v-model="code"
         :error-message="errorCodeMessage"
+        @on-resend="onResend"
         @on-back="onBackConfirm"
       />
       <auth-user-objects
         v-if="currentProgress === EProgressAuth.registerUserObjects"
         v-model:selected-premise="selectedPremise"
         v-model:selected-role="selectedRole"
+        :error-objects-message="errorObjectsMessage"
         @on-submit="onSubmitObjects"
       />
       <auth-expectation v-if="currentProgress === EProgressAuth.expectation" />
@@ -194,6 +196,7 @@ const timeLeft = ref<number>(60);
 
 const errorMessage = ref<string>("");
 const errorCodeMessage = ref<string>("");
+const errorObjectsMessage = ref<string>("");
 
 const selectedPremise = ref();
 const selectedRole = ref();
@@ -280,20 +283,30 @@ const onBackConfirm = () => {
 };
 
 const onSubmitObjects = async () => {
-  const phone = register.phone.replace(/[^+\d]/g, "");
+  if (selectedPremise.value.value && selectedRole.value.value) {
+    const phone = register.phone.replace(/[^+\d]/g, "");
 
-  await fetchSignUpRegistration({
-    firstName: register.firstName,
-    lastName: register.lastName,
-    middleName: register.middleName,
-    password: register.password,
-    email: register.email,
-    phone: phone,
-    premise: selectedPremise.value.value,
-    role: selectedRole.value.value,
-  });
+    const status = await fetchSignUpRegistration({
+      firstName: register.firstName,
+      lastName: register.lastName,
+      middleName: register.middleName,
+      password: register.password,
+      email: register.email,
+      phone: phone,
+      premise: selectedPremise.value.value,
+      role: selectedRole.value.value,
+    });
 
-  navigateTo("/", { replace: true });
+    if (status === 200) {
+      await nextTick();
+
+      console.log("Девочки, мы залогинились и ждем подтверждения");
+
+      // Переход на страницу подтверждения
+    } else {
+      errorObjectsMessage.value = "Ошибка сервера";
+    }
+  }
 };
 
 const formattedTime = computed(() => {
@@ -383,6 +396,14 @@ const getRecaptchaToken = async () => {
   }
 };
 
+const onResend = useDebounceFn(async () => {
+  if (isLogin.value) {
+    await onLogin();
+  } else {
+    await onSubmitUserInfo();
+  }
+}, 500);
+
 watch(isTimerActive, (newValue) => {
   if (newValue) {
     timer = setInterval(() => {
@@ -398,34 +419,56 @@ watch(isTimerActive, (newValue) => {
   }
 });
 
-watch(code, async (newValue) => {
-  if (newValue.length === 6) {
-    const code = newValue.reduce((acc, curr) => acc + curr, "");
-    if (isLogin.value) {
-      const status = await fetchSignIn(login.email, login.password, code);
+debouncedWatch(
+  code,
+  async (newValue) => {
+    if (newValue.length === 6) {
+      const codeString = newValue.reduce((acc, curr) => acc + curr, "");
 
-      if (status === 200) {
-        errorCodeMessage.value = "";
-        navigateTo("/", { replace: true });
+      if (isLogin.value) {
+        const status = await fetchSignIn(
+          login.email,
+          login.password,
+          codeString,
+        );
+
+        if (status === 200) {
+          errorCodeMessage.value = "";
+          navigateTo("/", { replace: true });
+        } else {
+          if (status === 400) {
+            errorCodeMessage.value = "Неверный код";
+          } else {
+            errorCodeMessage.value = "Ошибка сервера";
+          }
+        }
       } else {
-        errorCodeMessage.value = "Неверный код";
+        const phone = register.phone.replace(/[^+\d]/g, "");
+        const status = await fetchSignUpPreRegistration({
+          firstName: register.firstName,
+          lastName: register.lastName,
+          middleName: register.middleName,
+          password: register.password,
+          email: register.email,
+          phone: phone,
+          code: codeString,
+        });
+
+        if (status === 200) {
+          await nextTick();
+          currentProgress.value = EProgressAuth.registerUserObjects;
+        } else {
+          if (status === 400) {
+            errorCodeMessage.value = "Неверный код";
+          } else {
+            errorCodeMessage.value = "Ошибка сервера";
+          }
+        }
       }
-    } else {
-      const phone = register.phone.replace(/[^+\d]/g, "");
-      await fetchSignUpPreRegistration({
-        firstName: register.firstName,
-        lastName: register.lastName,
-        middleName: register.middleName,
-        password: register.password,
-        email: register.email,
-        phone: phone,
-        code: code,
-      });
-      await nextTick();
-      currentProgress.value = EProgressAuth.registerUserObjects;
     }
-  }
-});
+  },
+  { debounce: 500 },
+);
 
 watch(currentProgress, async (newValue) => {
   if (newValue === EProgressAuth.registerUserObjects) {

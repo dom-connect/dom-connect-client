@@ -50,7 +50,11 @@
     <!--    <UFormField class="mt-[16px]" label="Помещение" name="premise" required>-->
 
     <!--    </UFormField>-->
-
+    <span
+      v-if="errorObjectsMessage"
+      class="text-error-400 text-sm font-semibold mt-4"
+      >{{ errorObjectsMessage }}</span
+    >
     <UButton
       class="justify-center cursor-pointer mt-8"
       label="Продолжить"
@@ -62,9 +66,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { IEmits } from "./types";
+import type { IEmits, IProps } from "./types";
 import { useAuthStore } from "~/store/auth";
 
+defineProps<IProps>();
 const emit = defineEmits<IEmits>();
 
 const authStore = useAuthStore();
@@ -100,7 +105,7 @@ onMounted(() => {
     if (houses.value.length) {
       housesList.value = houses.value.map((item: any) => ({
         label: item.name,
-        value: item.id,
+        value: item.number,
       }));
     }
   }, 1000);

@@ -114,8 +114,16 @@ export const useAuthStore = defineStore("auth", () => {
       if (response.preToken) {
         accessToken.value = response.preToken;
       }
+
+      return 200;
     } catch (e) {
-      console.error(e);
+      console.error("Ошибка:", e);
+
+      if (e instanceof FetchError && e.response) {
+        return e.response.status;
+      }
+
+      return 500;
     } finally {
       loading.value = false;
     }
@@ -142,8 +150,16 @@ export const useAuthStore = defineStore("auth", () => {
         accessToken.value = response.accessToken;
         refreshToken.value = response.refreshToken;
       }
+
+      return 200;
     } catch (e) {
-      console.error(e);
+      console.error("Ошибка:", e);
+
+      if (e instanceof FetchError && e.response) {
+        return e.response.status;
+      }
+
+      return 500;
     } finally {
       loading.value = false;
     }

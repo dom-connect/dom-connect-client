@@ -22,9 +22,11 @@
         type="number"
       />
     </UFormField>
-    <span v-if="errorMessage" class="text-error-400 text-sm font-semibold">{{
-      errorMessage
-    }}</span>
+    <span
+      v-if="errorMessage"
+      class="text-error-400 text-sm font-semibold mt-4"
+      >{{ errorMessage }}</span
+    >
     <span class="text-sm text-neutral-400 font-medium mt-4 mb-8"
       >Не получили код? Запросите повторную отправку через 60 секунд</span
     >
@@ -34,7 +36,7 @@
       :variant="isTimerActive ? 'outline' : 'subtle'"
       class="justify-center cursor-pointer"
       type="submit"
-      @click="onSubmit"
+      @click="onResend"
     />
   </div>
 </template>
@@ -42,7 +44,7 @@
 <script lang="ts" setup>
 import type { IEmits, IProps } from "./types";
 
-const props = defineProps<IProps>();
+defineProps<IProps>();
 const emit = defineEmits<IEmits>();
 
 const inputCode = defineModel<string[]>();
@@ -57,8 +59,10 @@ const isTimerActive = ref<boolean>(false);
 const timeLeft = ref<number>(60);
 let timer: NodeJS.Timeout;
 
-const onSubmit = () => {
-  emit("onSubmit");
+const onResend = () => {
+  emit("onResend");
+  isTimerActive.value = true;
+  timeLeft.value = 60;
 };
 
 const onBack = () => {
@@ -78,6 +82,10 @@ watch(isTimerActive, (newValue) => {
   } else {
     clearInterval(timer);
   }
+});
+
+onMounted(() => {
+  isTimerActive.value = true;
 });
 </script>
 
