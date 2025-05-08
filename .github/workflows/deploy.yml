@@ -1,0 +1,71 @@
+name: Docker Compose CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Create cache directory
+        run: mkdir -p /tmp/.buildx-cache
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker image with cache
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag vodka228/diplom-client:latest \
+            --file Dockerfile \
+            --cache-from=type=registry,ref=vodka228/diplom-client:buildcache \
+            --cache-to=type=registry,ref=vodka228/diplom-client:buildcache,mode=max \
+            --push \
+            .
+
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete \
+            --exclude=".git*" \
+            --exclude=".github" \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/client
+
+      - name: Create .env file
+        run: |
+          echo "${{ secrets.ENV_CONTENT }}" > .env
+
+      - name: Copy .env to server
+        run: |
+          scp -o StrictHostKeyChecking=no .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/client/.env
+
+      - name: Run docker stop and delete
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/client && docker stop diplom-client || true && 
+          docker rm -f diplom-client || true"
+
+      - name: Run docker pull
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/client && docker pull vodka228/diplom-client:latest"
+
+      - name: Run docker run
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/client && docker run -d --name diplom-client -p 3000:3000 vodka228/diplom-client:latest"
