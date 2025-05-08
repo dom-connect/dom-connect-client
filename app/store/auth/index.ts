@@ -183,9 +183,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       loading.value = true;
 
-      const response = await api.get<any>(
-        `/endpoint/auth/premise?homeId=${homeId}`,
-      );
+      const response = await api.get<any>(`/api/auth/premise?homeId=${homeId}`);
 
       if (response.data.length) {
         premises.value = response.data;
